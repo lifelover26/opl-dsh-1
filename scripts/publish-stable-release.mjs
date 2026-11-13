@@ -3,7 +3,10 @@ import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { validateReleaseManifest } from '../installer/release-manifest.mjs'
+import {
+  officialVersionForPlatform,
+  validateReleaseManifest,
+} from '../installer/release-manifest.mjs'
 import { verifyPayload } from './qualification-support.mjs'
 import { renderReleaseNotes } from './release-notes.mjs'
 
@@ -13,9 +16,22 @@ const command = (program, args) =>
   execFileSync(program, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
 const api = (path) => JSON.parse(command('gh', ['api', path]))
 const record = (value) => value !== null && typeof value === 'object' && !Array.isArray(value)
+const officialVersionPattern = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/
+
+async function readQualification(root, platform) {
+  const file = join(root, 'dist', 'evidence', platform, 'official-qualification.json')
+  try {
+    return JSON.parse(await readFile(file, 'utf8'))
+  } catch (error) {
+    throw Error(
+      `Missing ${platform} qualification evidence or provenance: ${file}: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+}
 
 /** Both runners must have qualified the same clean source and exact shipped payload. */
 export function assertQualification(evidence, artifact, manifest, platform, arch) {
+  const officialVersion = officialVersionForPlatform(manifest, platform, arch)
   if (
     evidence.schemaVersion !== 1 ||
     evidence.status !== 'passed' ||
@@ -29,7 +45,7 @@ export function assertQualification(evidence, artifact, manifest, platform, arch
       throw Error(`${platform} qualification does not match candidate ${field}`)
   if (
     evidence.enhancementSha256 !== artifact.sha256 ||
-    evidence.officialVersion !== manifest.official.version ||
+    evidence.officialVersion !== officialVersion ||
     evidence.officialIdentity?.signatureVerified !== true
   )
     throw Error(`${platform} qualification has a different payload, official version or identity`)
@@ -70,7 +86,7 @@ export function assertQualification(evidence, artifact, manifest, platform, arch
         (provider) =>
           provider.package === name &&
           provider.owner === 'official' &&
-          provider.version === evidence.officialVersion,
+          provider.version === officialVersion,
       ),
     )
   )
@@ -97,11 +113,26 @@ export async function publishStableRelease(root) {
     throw Error('Release tag does not match the frozen source')
   if (command('git', ['status', '--porcelain'])) throw Error('Candidate source is dirty')
   const manifestFile = join(dist, 'release-manifest.json')
-  const manifestBytes = await readFile(manifestFile)
-  const manifest = validateReleaseManifest(JSON.parse(manifestBytes), {
+  let manifestBytes = await readFile(manifestFile)
+  let manifest = validateReleaseManifest(JSON.parse(manifestBytes), {
     tagName: tag,
     assetName: 'OPL-DSH-Enhancements.zip',
+    requireMatchingOfficialFeeds: true,
   })
+  const feeds = manifest.official.feeds
+  if (!feeds?.['mac-arm64'] || !feeds['win-x64'])
+    throw Error('Release manifest is missing macOS or Windows official feed provenance')
+  const frozenOfficialVersion = process.env.OPL_PREPARED_OFFICIAL_VERSION
+  const frozenWindowsVersion = process.env.OPL_PREPARED_OFFICIAL_WINDOWS_VERSION
+  if (
+    !officialVersionPattern.test(frozenOfficialVersion ?? '') ||
+    !officialVersionPattern.test(frozenWindowsVersion ?? '') ||
+    frozenOfficialVersion !== frozenWindowsVersion ||
+    frozenOfficialVersion !== manifest.official.version ||
+    feeds['mac-arm64'].version !== frozenOfficialVersion ||
+    feeds['win-x64'].version !== frozenWindowsVersion
+  )
+    throw Error('Official desktop feeds do not match the frozen preparation version')
   const archive = await readFile(join(dist, manifest.enhancement.asset))
   if (
     manifest.sourceCommit !== sourceCommit ||
@@ -113,6 +144,16 @@ export async function publishStableRelease(root) {
   const payload = join(dist, 'OPL DSH 一键安装')
   command('python3', ['-m', 'zipfile', '-e', join(dist, manifest.enhancement.asset), payload])
   const artifact = await verifyPayload(payload)
+  for (const field of [
+    'sourceCommit',
+    'sourceTreeSha256',
+    'enhancementVersion',
+    'suiteSha256',
+    'sha256',
+    'officialVersion',
+  ])
+    if (typeof artifact[field] !== 'string' || !artifact[field])
+      throw Error(`Shipped payload is missing provenance field: ${field}`)
   if (
     artifact.sourceDirty !== false ||
     artifact.sourceCommit !== sourceCommit ||
@@ -121,22 +162,25 @@ export async function publishStableRelease(root) {
     artifact.officialVersion !== manifest.official.version
   )
     throw Error('Shipped payload provenance differs from the frozen release candidate')
-  const platforms = {}
-  for (const [runner, platform, arch] of [
-    ['macos-15', 'darwin', 'arm64'],
-    ['windows-latest', 'win32', 'x64'],
-  ]) {
-    const evidence = JSON.parse(
-      await readFile(join(dist, 'evidence', runner, 'official-qualification.json'), 'utf8'),
-    )
-    platforms[platform] = assertQualification(evidence, artifact, manifest, platform, arch)
-  }
-  // Re-read both official feeds immediately before publishing. The same inputs
-  // must produce an identical manifest; do not substitute a handwritten baseline.
+  const macEvidence = await readQualification(root, 'macos-15')
+  const windowsEvidence = await readQualification(root, 'windows-latest')
+  // Re-read both official feeds immediately before publishing. Either platform
+  // changing invalidates the frozen candidate and requires a new preparation run.
+  const frozenFeeds = manifest.official.feeds
   await writeFile(join(dist, 'artifact.json'), JSON.stringify(artifact))
   command(process.execPath, [join(root, 'scripts/create-release-manifest.mjs')])
-  if (!manifestBytes.equals(await readFile(manifestFile)))
-    throw Error('The official feeds or release manifest changed after qualification')
+  manifestBytes = await readFile(manifestFile)
+  manifest = validateReleaseManifest(JSON.parse(manifestBytes), {
+    tagName: tag,
+    assetName: 'OPL-DSH-Enhancements.zip',
+    requireMatchingOfficialFeeds: true,
+  })
+  if (JSON.stringify(frozenFeeds) !== JSON.stringify(manifest.official.feeds))
+    throw Error('An official desktop feed or release manifest changed after qualification')
+  const platforms = {
+    darwin: assertQualification(macEvidence, artifact, manifest, 'darwin', 'arm64'),
+    win32: assertQualification(windowsEvidence, artifact, manifest, 'win32', 'x64'),
+  }
   const qualification = {
     schemaVersion: 1,
     status: 'passed',
@@ -144,6 +188,12 @@ export async function publishStableRelease(root) {
     sourceTreeSha256: artifact.sourceTreeSha256,
     sourceDirty: false,
     officialVersion: artifact.officialVersion,
+    officialVersions: Object.fromEntries(
+      Object.entries(manifest.official.feeds ?? {}).map(([platform, feed]) => [
+        platform,
+        feed.version,
+      ]),
+    ),
     enhancementVersion: version,
     enhancementSha256: artifact.sha256,
     suiteSha256: artifact.suiteSha256,
@@ -173,7 +223,17 @@ export async function publishStableRelease(root) {
   const notesFile = join(dist, 'release-notes.md')
   const notes = renderReleaseNotes(
     await readFile(join(root, 'docs', `release-notes-${version}.md`), 'utf8'),
-    { version, officialVersion: manifest.official.version, sourceCommit },
+    {
+      version,
+      officialVersion: manifest.official.version,
+      officialVersions: Object.fromEntries(
+        Object.entries(manifest.official.feeds ?? {}).map(([platform, feed]) => [
+          platform,
+          feed.version,
+        ]),
+      ),
+      sourceCommit,
+    },
   )
   await writeFile(notesFile, notes)
   const previous = JSON.parse(
