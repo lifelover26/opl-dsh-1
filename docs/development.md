@@ -185,6 +185,8 @@ node installer/install-linux.mjs "dist/OPL DSH 一键安装"
 
 安装器复用官方 `runPluginCommand`，固定三包和 OFM 的版本与摘要，并保持 `suite → execution → collaboration` 的装载顺序。Linux 不安装 KimiCU、Windows 会话清理 Skill，也不启用 Desktop 的增强层自动更新。SuperAgent 使用单独的 `opl-superagent` home/profile/state，不与主 OPL profile 共享会话或工单状态。Linux CLI/Web 验收不替代 macOS/Windows 官方桌面资格。
 
+用户点击「立即更新」时复用现有下载、校验、任务空闲检查和安装交接。任务仍运行、等待人工处理或状态未知时不退出；用户处理后可重新点击。取消、延后或目标版本变化会使旧尝试失效。手动更新与空闲更新共用交接互斥，保留退出后安装策略及已有待安装计划。
+
 ## 本地候选安装
 
 从 PR 分支安装供本机验收的包时，对 `installer/install.mjs` 追加 `--local-candidate`。候选版可检查公开 Release，但不会自动覆盖；用户可以明确准备兼容的新版本，或运行完整安装器替换。安装验收须在完全退出官方应用后，通过当前安装版本所带的更新入口或其兼容维护启动器应用候选，并回读实际组合和安装摘要。

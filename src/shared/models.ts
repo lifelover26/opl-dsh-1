@@ -14,29 +14,18 @@ export interface ModelDefinition {
 }
 export const modelRefKey = (ref: ModelRef) => JSON.stringify([ref.provider, ref.model])
 
-/**
- * Models that were advertised by an older provider catalog but are no longer
- * part of the OPL product surface. Keep this decision in one place so the
- * model list, automatic combinations and persisted legacy combinations agree.
- */
-export function isRetiredModel(ref: ModelRef): boolean {
-  const id = ref.model.includes('::') ? ref.model.slice(ref.model.lastIndexOf('::') + 2) : ref.model
-  const provider = ref.provider.toLowerCase()
-  if (
-    id === 'deepseek-v4-pro' &&
-    (provider.includes('deepseek') || provider.includes('opl-gateway'))
-  )
-    return true
-  if (
-    (id === 'gpt-5' || id === 'gpt-5-mini') &&
-    (provider.includes('opl-gateway') || provider.includes('codex'))
-  )
-    return true
+/** Model availability belongs to the live provider catalog, including saved references. */
+export function isRetiredModel(_ref: ModelRef): boolean {
   return false
 }
 
 /** Gateway Gemini models natively paired with the official Antigravity CLI (and OpenCode fallback). */
-export const GATEWAY_ANTIGRAVITY_GEMINI_MODELS = ['gemini-4-carbon', 'gemini-4-hydrogen'] as const
+export const GATEWAY_ANTIGRAVITY_GEMINI_MODELS = [
+  'gemini-4-carbon',
+  'gemini-4-hydrogen',
+  'gemini-4-argon',
+  'gemini-3.8-flash',
+] as const
 
 /** Stable product names for IDs whose upstream display text changed. */
 export function displayModelName(ref: ModelRef, name?: string): string {
@@ -79,6 +68,7 @@ export function displayModelName(ref: ModelRef, name?: string): string {
     if (id === 'cohere/north-mini-code:free') return 'Kilo North Mini Code'
     if (id === 'nvidia/nemotron-3-ultra-550b-a55b:free') return 'Kilo Nemotron 3 Ultra'
     if (id === 'openrouter/free') return 'Kilo OpenRouter Free'
+    if (id === 'hy4-flash-free') return 'Hy4 Flash Free'
     if (id === 'flint-40b-free') return 'Flint 40B Free'
     if (id === 'recursive/flint-v1.0:free') return 'Flint v1.0 Free'
   }

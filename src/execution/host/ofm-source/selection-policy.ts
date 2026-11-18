@@ -1,20 +1,12 @@
-/** Picker policy for OFM lanes rejected by their required official client. */
+/** Picker policy for structural OFM exclusions and official-channel routing. */
 import type { ModelRef } from '../../contracts/catalog.ts'
 import { OFM_PROVIDER, OFM_PROVIDERS, isExcludedOfmModel, isOfmVirtualModelId } from './provider.ts'
 
-/** OFM lanes still absent or incomplete in the official OpenCode directory. */
-export const OFM_CLIENT_REJECTED_MODELS: readonly string[] = [
-  'muse-spark-1.2-contributor-free',
-  'step-5-preview-free',
-]
-
-/** Hide only the named OFM lanes, without changing another provider's same-named model. */
+/** Hide only structural OFM exclusions, without changing another provider's same-named model. */
 export function isHiddenOfmSelection(ref: ModelRef): boolean {
   return (
     OFM_PROVIDERS.includes(ref.provider) &&
-    (isExcludedOfmModel(ref.model) ||
-      isOfmVirtualModelId(ref.model) ||
-      OFM_CLIENT_REJECTED_MODELS.includes(ref.model))
+    (isExcludedOfmModel(ref.model) || isOfmVirtualModelId(ref.model))
   )
 }
 
@@ -58,6 +50,7 @@ export const OFM_OPENCODE_OFFICIAL_FREE_MODELS: readonly string[] = [
   'nemotron-3.5-super-vl-free',
   'glm-5.3-flash-free',
   'big-pickle',
+  'hy4-flash-free',
   'flint-40b-free',
 ]
 

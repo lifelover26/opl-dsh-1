@@ -16,7 +16,7 @@
 | Windows · x64         | [Windows 安装器（EXE）](https://github.com/gaofeng21cn/opl-dsh/releases/latest/download/OPL-DSH-Installer-windows-x64.exe) |
 | Linux · x64           | 源码构建 + 官方 CLI/Web，见下方“Linux 本地迁移”                                                                            |
 
-打开安装器后，按提示选择 OPL Gateway、DeepSeek 官方或稍后登录。安装器会联网下载并校验官方桌面，通过官方插件管理器安装增强插件，并安装 Codex Skill。首次迁移会启用官方 Agent Team 与 Auto Review 插件；已有明确禁用及后续在官方插件管理器中的选择会保留。OPL 安装器未签名，首次可能需要按系统提示允许打开。
+打开安装器后，按提示选择 OPL Gateway、DeepSeek 官方或稍后登录。安装器会联网下载并校验官方桌面，通过官方插件管理器安装增强插件，并安装 Codex Skill。Auto Review 保持官方默认关闭；需要时通过官方插件管理器主动开启，已有启用或禁用选择会保留。OPL 安装器未签名，首次可能需要按系统提示允许打开。
 
 在“插件 → 已安装插件”中，OPL 显示为三个可分别启停的插件：**OPL DSH 基础增强**、**OPL 执行组合**和**OPL 跨引擎协作**。每个插件都有名称、说明、OPL 图标和离线详情；跨引擎协作需要启用执行组合。安装器统一更新三个包，并保留已有禁用选择。
 
@@ -69,7 +69,8 @@ OPL 领域智能体预设是可选集成：需要另外安装 OPL Framework 和�
 - **模型 + Harness 组合**：同一个输入框和消息流中使用 DSH、Codex CLI、Claude Code、OpenCode 等执行引擎；在“执行与组合”中按 Harness 批量选择，或手动添加已适配搭配。见[适配与支持范围](docs/harness-adaptation.md)。
 - **DSH 官方智能体团队**：在“协作与自动化 → 角色与执行”给官方角色绑定 DSH、Codex 或 Claude Code 组合。角色、人设、Skills、成员身份、消息和任务板归官方管理，OPL 关联外部执行会话并接入官方协作工具。绑定适用于新会话与新成员。见[跨 Harness 团队接入](docs/cross-harness-team.md)。
 - **OPL 领域智能体**：读取本机 App/Framework 的 `agent_packages` 投影，把已安装、已激活且允许启动的标准智能体注册为官方 Agent 预设。新会话选择 MAS、MAG、OBF 等预设，主 Skill 由官方 Skill 系统加载；在“角色与执行”为交互会话绑定已就绪的 DSH、Codex 或 Claude 组合，正式 StageRun 的 executor 仍由 Package 合同决定。未就绪或被隐藏的 Package 不会显示为可用，不复制 Package 清单或领域执行状态。见[跨 Harness 团队接入](docs/cross-harness-team.md#opl-领域智能体预设)。
-- **Codex ↔ DSH 协作**：自动安装 `opl-dsh-official` Skill，支持跨 Harness 派发、续作、读取结果与交付验收；主动回传需配置通知桥。见[协作说明](docs/collaboration-implementation.md)。
+- **清理 DSH 会话（Windows）**：安装器随附会话清理 Skill。在 Codex 中输入“使用 $opl-dsh-session-cleanup，把 DSH 已归档的会话移到回收站，保留未归档会话”，也可以指定具体的会话 ID。
+- **Codex ↔ DSH 协作**：自动安装 `opl-dsh-official` Skill，支持跨 Harness 派发、续作、读取结果与交付验收；主动回传需配置通知桥。可选的[项目续作](docs/project-coordinator.md)复用该通知桥，在明确登记的项目中处理结果与审查中断；需要 Node.js 和用户在 Codex 中信任安装的 Hook。见[协作说明](docs/collaboration-implementation.md)。
 - **SuperAgent 仓库协作**：继承 DeepSeek SuperAgent 原型的 GitHub／可选飞书接单、授权策略、工单、执行和管理面板。macOS 和 Linux 在“协作与自动化”打开独立页面后配置。见[SuperAgent](docs/superagent.md)。
 - **Auto Review 工具审批**：使用官方自动审批，每个会话需选择官方 `auto` 权限预设。OPL reviewer 默认关闭，启用后可配置独立 reviewer、预算和 ZCode 外部审批；关闭后官方 Auto 继续使用当前会话模型。支持专用 codex-auto-review、[BambooNode StartLux](docs/bamboo-startlux-auto-review.md) 和 [Jev](docs/jev-auto-review.md) 决策模型。见[工具审批](docs/auto-review.md)。
 - **MiniMax 官方账号**：通过 mcode 登录中国站或国际站，支持登录状态、退出、取消授权与超时处理。见[MiniMax 账号与 mcode](docs/minimax-code.md)。
@@ -97,7 +98,7 @@ OPL 领域智能体预设是可选集成：需要另外安装 OPL Framework 和�
 
 ## 更新与数据
 
-官方桌面通过 DeepSeek 自身的机制更新。OPL 增强在启动后异步检查正式 Release，运行期间每 6 小时检查一次；新版本在侧边栏提示，可在「通用设置 → 更新」手动检查、关闭自动检查或改为仅提醒。默认策略会自动下载兼容更新；完全退出应用后，一次性后台 watcher 等待官方 Desktop 与 Host 结束，安装并校验增强层，下次直接打开官方应用即使用新版本。需要升级官方桌面时使用完整安装包，也可重新运行最新安装器更新。Linux 不启用这套 Desktop watcher 或增强层自动安装，须重新构建并运行 `installer/install-linux.mjs`。Homebrew 用户可运行：
+官方桌面通过 DeepSeek 自身的机制更新。OPL 增强在启动后异步检查正式 Release，运行期间每 6 小时检查一次；新版本在侧边栏提示，可在「通用设置 → 更新」手动检查、关闭自动检查或改为仅提醒。默认策略会自动下载兼容更新；完全退出应用后，一次性后台 watcher 等待官方 Desktop 与 Host 结束，安装并校验增强层，下次直接打开官方应用即使用新版本。需要升级官方桌面时使用完整安装包，也可重新运行最新安装器更新。也可点击「立即更新」，确认所有项目空闲后退出、安装并重新打开；有活动任务时保留任务并提示稍后重试。Linux 不启用 Desktop watcher 或增强层自动安装，须重新构建并运行 Linux 安装入口。Homebrew 用户可运行：
 
 ```sh
 brew upgrade --cask gaofeng21cn/opl-dsh/opl-dsh
@@ -105,7 +106,7 @@ brew upgrade --cask gaofeng21cn/opl-dsh/opl-dsh
 
 增强包和缓存保存在 OPL DSH Suite，官方 profile、登录、会话与设置位于 `~/.dsh`；重新安装保留已有数据。Linux 的 Suite 默认位于 `~/.local/share/OPL DSH Suite`，OPL 执行与会话数据跟随实际 CLI profile。Windows 上的 BambooNode 和 TypeSafe 个人 Key 使用 Windows Credential Manager；MiniMax 账号凭据由官方 mcode 管理。
 
-准确版本、平台与资产摘要见[最新 Release](https://github.com/gaofeng21cn/opl-dsh/releases/latest)。运行中的 profile 不替换，更新校验失败时保留已安装版本。发布流程每日检查主线的未发布改动和官方 DSH 双平台版本变化，通过兼容验收后自动发布新的联合版本，详见[发布约定](docs/release-policy.md)与[发布 SOP](docs/release-sop.md)。
+准确版本、平台与资产摘要见[最新 Release](https://github.com/gaofeng21cn/opl-dsh/releases/latest)。运行中的 profile 不替换，更新校验失败时保留已安装版本。自定义启动入口在增强更新及失败回滚中保持不变。发布流程每日检查主线的未发布改动和官方 DSH 双平台版本变化，通过兼容验收后自动发布新的联合版本，详见[发布约定](docs/release-policy.md)与[发布 SOP](docs/release-sop.md)。
 
 ## 开发与文档
 

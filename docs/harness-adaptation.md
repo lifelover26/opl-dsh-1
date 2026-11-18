@@ -16,40 +16,42 @@
 
 默认仅生成厂商官配。OpenCode、Pi、Kilo 和 ZCode 的已适配渠道在“添加执行组合”中提供推荐选项，选择后填入模型、执行引擎和名称，保存后才加入列表。推荐采用来源与模型的精确 ID，不按名称猜测；用户自定义默认组合、停用选择和权限保留。未知模型需手动配置，不可用组合不进入对话选择列表。
 
+Hy4 Flash Free（`hy4-flash-free`）推荐 OpenCode，保持 OFM 来源，以 `opencode/hy4-flash-free` 使用官方免费通道。[OpenCode 免费渠道限制](https://opencode.ai/docs/console/harnesses/)不允许其他 Harness 调用；腾讯 CodeBuddy 支持自定义模型与 ACP，但这不代表它可使用该免费渠道，因此不登记为腾讯官配。模型能力与推理参数沿用实时目录，不把腾讯付费模型或其他渠道的同名模型当成此路线。
+
 OFM 来源统一使用 `Our Free Model` 写法，区域渠道保留 `region-limited` 标识，OpenCode 官方免费通道保留独立来源名称。“新模型发现”和“已启用的组合”共用同一组红色状态标签：当前目录不再包含模型时显示“目录已移除”，停用时显示“未启用”，目录读取失败时显示“状态未确认”；其他执行准入失败显示“不可用”，悬停可查看原因。发现列表另行保留官方、推荐或待适配的 Harness 信息，可用模型不显示失败标签。不可用模型不进入“选择与添加组合”；普通保存保留未操作的隐藏配置，“取消全选”及按 Harness 取消会同时停用对应的隐藏组合。不可用的已启用组合也可单独“移除”，只停用配置，不删除会话；来源恢复后不会自动重新启用。
 
 套件通过 OFM 的公开 `/clients` 接口读取免费车道的运行端点、Key 与模型目录，并在启动前再次核对官方 LLM 注册表。先在 OFM 的「本地转发」启用免费车道；未启用、模型撤销、来源卸载或准入失败时拒绝启动。账号车道 `our-free-model-region` 不借用免费车道的端点。
 
 旧会话续发与编辑重发也核对当前 OFM 目录。目录缺失、读取失败与实际不支持推理档位分别报告，不能用已保存的档位推断模型能力；编辑被拒绝时不改动原消息或外部历史。CLI 自己管理的推理档位不写入原生模型请求，Kilo 和 OpenCode 当前不提供档位选择，Pi 按实时广告验证、设置并回读档位；Gemma 保持渠道默认思考设置。
 
-| 模型                                                                                                                          | 首选 Harness                    | 协议      |
-| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | --------- |
-| Kimi K2.6、K3                                                                                                                 | Kimi Code                       | Messages  |
-| MiMo v2.6 Flash（mimo-v2.6-flash-free）                                                                                       | OpenCode，官方免费通道          | Chat      |
-| Laguna S、XS 2.1                                                                                                              | Poolside                        | Chat      |
-| GLM 5.3、5.3 Flash（z-ai 原始 ID）                                                                                            | ZCode                           | Chat      |
-| EAC GLM 5.3 Flash Free（opencode/glm-5.3-flash-free）                                                                         | OpenCode，经 OFM 转发           | Chat      |
-| EAC DeepSeek V4.1 Flash Free（opencode/deepseek-v4.1-flash-free）                                                             | OpenCode，经 OFM 转发           | Chat      |
-| EAC Nemotron 3.5 Lightning Free（opencode/nemotron-3.5-lightning-free）、Super VL Free（opencode/nemotron-3.5-super-vl-free） | OpenCode，经 OFM 转发           | Chat      |
-| EAC Flint 40B Free（opencode/flint-40b-free）                                                                                 | OpenCode，经 OFM 转发           | Chat      |
-| EAC DeepSeek V4.1 Flash（deepseek-ai/deepseek-v4.1-flash）                                                                    | DSH，经 OFM 原生模型服务        | Chat      |
-| EAC MiniMax M3.1 Flash（minimaxai/minimax-m3.1-flash）                                                                        | OpenCode，经 OFM 转发           | Chat      |
-| EAC Step 5 Preview（stepfun-ai/step-5-preview）                                                                               | StepCode，经 OFM 转发           | Chat      |
-| EAC Mistral Large 4（mistralai/mistral-large-4-1t-a52b）                                                                      | Mistral Vibe 3.0.4，经 OFM 转发 | Chat      |
-| Big Pickle（big-pickle）                                                                                                      | OpenCode，官方免费通道          | Chat      |
-| Nemotron 3 Super 120B（nvidia/nemotron-3-super-120b-a12b:free）                                                               | Kilo Code，经 OFM 转发          | Chat      |
-| Flint v1.0 Free（recursive/flint-v1.0:free）                                                                                  | Kilo Code，经 OFM 转发          | Chat      |
-| Kilo Ling 3.1 Flash 1019（inclusionai/ling-3.1-flash-1019-free）                                                              | Kilo Code，经 OFM 转发          | Chat      |
-| Kilo Crouton Alpha（stealth/crouton-alpha）                                                                                  | Kilo Code，经 OFM 转发          | Chat      |
-| Kilo LFM3-1.7B（liquid/lfm-3-1.7b:free）                                                                                     | Kilo Code，经 OFM 转发          | Chat      |
-| Kilo Inkling 2 Small（thinkingmachines/inkling-2-small:free） | Kilo Code，经 OFM 转发 | Chat |
-| Flint 40B Free（flint-40b-free）                                                                                              | OpenCode，经 OFM 转发           | Chat      |
-| GPT-OSS 20B                                                                                                                   | Codex CLI                       | Responses |
-| Kilo Step 5 Preview（stepfun/step-5-preview-free）                                                                            | StepCode                        | Chat      |
-| Ling、LongCat、North Mini Code、Nemotron 3.5、Space Bunny、OpenRouter Free                                                    | OpenCode                        | Chat      |
-| OPL Gateway Gemini 4 Carbon、Gemini 4 Hydrogen | Antigravity CLI（默认），OpenCode（备选） | Gemini 原生；备选 Chat |
-| Nemotron Nano Omni、LFM2.5、Inkling Small、Inkling、Gemma 4 31B                                                               | Pi Coding Agent                 | Chat      |
-| Dots、Glyph、Kilo Auto Free、Kilo Beam、Xing 4.0                                                                              | Kilo Code                       | Chat      |
+| 模型                                                                                                                          | 首选 Harness                              | 协议                   |
+| ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ---------------------- |
+| Kimi K2.6、K3                                                                                                                 | Kimi Code                                 | Messages               |
+| MiMo v2.6 Flash（mimo-v2.6-flash-free）                                                                                       | OpenCode，官方免费通道                    | Chat                   |
+| Laguna S、XS 2.1                                                                                                              | Poolside                                  | Chat                   |
+| GLM 5.3、5.3 Flash（z-ai 原始 ID）                                                                                            | ZCode                                     | Chat                   |
+| EAC GLM 5.3 Flash Free（opencode/glm-5.3-flash-free）                                                                         | OpenCode，经 OFM 转发                     | Chat                   |
+| EAC DeepSeek V4.1 Flash Free（opencode/deepseek-v4.1-flash-free）                                                             | OpenCode，经 OFM 转发                     | Chat                   |
+| EAC Nemotron 3.5 Lightning Free（opencode/nemotron-3.5-lightning-free）、Super VL Free（opencode/nemotron-3.5-super-vl-free） | OpenCode，经 OFM 转发                     | Chat                   |
+| EAC Flint 40B Free（opencode/flint-40b-free）                                                                                 | OpenCode，经 OFM 转发                     | Chat                   |
+| EAC DeepSeek V4.1 Flash（deepseek-ai/deepseek-v4.1-flash）                                                                    | DSH，经 OFM 原生模型服务                  | Chat                   |
+| EAC MiniMax M3.1 Flash（minimaxai/minimax-m3.1-flash）                                                                        | OpenCode，经 OFM 转发                     | Chat                   |
+| EAC Step 5 Preview（stepfun-ai/step-5-preview）                                                                               | StepCode，经 OFM 转发                     | Chat                   |
+| EAC Mistral Large 4（mistralai/mistral-large-4-1t-a52b）                                                                      | Mistral Vibe 3.0.4，经 OFM 转发           | Chat                   |
+| Big Pickle（big-pickle）                                                                                                      | OpenCode，官方免费通道                    | Chat                   |
+| Nemotron 3 Super 120B（nvidia/nemotron-3-super-120b-a12b:free）                                                               | Kilo Code，经 OFM 转发                    | Chat                   |
+| Flint v1.0 Free（recursive/flint-v1.0:free）                                                                                  | Kilo Code，经 OFM 转发                    | Chat                   |
+| Kilo Ling 3.1 Flash 1019（inclusionai/ling-3.1-flash-1019-free）                                                              | Kilo Code，经 OFM 转发                    | Chat                   |
+| Kilo Crouton Alpha（stealth/crouton-alpha）                                                                                   | Kilo Code，经 OFM 转发                    | Chat                   |
+| Kilo LFM3-1.7B（liquid/lfm-3-1.7b:free）                                                                                      | Kilo Code，经 OFM 转发                    | Chat                   |
+| Kilo Inkling 2 Small（thinkingmachines/inkling-2-small:free）                                                                 | Kilo Code，经 OFM 转发                    | Chat                   |
+| Flint 40B Free（flint-40b-free）                                                                                              | OpenCode，经 OFM 转发                     | Chat                   |
+| GPT-OSS 20B                                                                                                                   | Codex CLI                                 | Responses              |
+| Kilo Step 5 Preview（stepfun/step-5-preview-free）                                                                            | StepCode                                  | Chat                   |
+| Ling、LongCat、North Mini Code、Nemotron 3.5、Space Bunny、OpenRouter Free                                                    | OpenCode                                  | Chat                   |
+| OPL Gateway Gemini 4 Carbon、Gemini 4 Hydrogen、Gemini 4 Argon、Gemini 3.8 Flash                                               | Antigravity CLI（默认），OpenCode（备选） | Gemini 原生；备选 Chat |
+| Nemotron Nano Omni、LFM2.5、Inkling Small、Inkling、Gemma 4 31B                                                               | Pi Coding Agent                           | Chat                   |
+| Dots、Glyph、Kilo Auto Free、Kilo Beam、Xing 4.0                                                                              | Kilo Code                                 | Chat                   |
 
 表格描述适配器配对，不是当前在线可用性承诺；模型必须仍在来源目录中且通过启动前检查。Cat Jam、MiMo v2.6 Flash、Muse Spark 1.3、Longcat 2.5、OpenCode 的 DeepSeek/GLM/Beam/Nemotron 免费条目、Space Bunny 和 Big Pickle 的精确裸 ID 使用 OpenCode 官方免费通道。Kilo 频道的 Nemotron 3 Super 120B 使用 Kilo 执行器并经 OFM Chat 转发，不折叠成 OpenCode 路线。Flint 的 `flint-40b-free` 与 EAC 的 `opencode/flint-40b-free` 均由 OpenCode 经 OFM Chat 转发，保留各自的完整 ID；`recursive/flint-v1.0:free` 由 Kilo 执行并经 OFM 转发。同名模型不互相替换。
 
@@ -59,7 +61,7 @@ Kilo ERNIE-5.5-Flash-Preview 使用精确 ID `baidu/ernie-5.5-flash-preview:free
 
 Kilo Ling 3.2 Flash（`inclusionai/ling-3.2-flash:free`）默认推荐 Kilo Code，经 OFM Chat 转发，保留来源的默认思考设置，不显示推理档位菜单；上下文容量与用量沿用实时目录及官方统计。
 
-EAC 的 AMD 路由保留完整 `amd/` ID：`amd/DeepSeek-V4.1-Flash`、`amd/DeepSeek-V4-Flash` 推荐 DSH；`amd/MiMo-V2.6-Flash` 推荐 MiMo Code；`amd/GLM-5.3-Flash` 推荐 ZCode；`amd/Qwen3.8-27B`、`amd/MiniCPM-V-4.7-35B-A3B`、`amd/MiniCPM5-2B`、`amd/Gemma-4-31B-IT`、`amd/MiniCPM-V-4.7-1B` 推荐 Pi。均经 OFM 的 EAC Chat 转发，不与同名免费渠道合并。来源当前未声明这些路由的真实推理档位，外部 Harness 保留来源默认设置；DSH 来源菜单的 light、balanced、deep 控制输出预算。图片与上下文能力沿用来源实时声明，不根据模型名称补齐。
+EAC 的 AMD 路由保留完整 `amd/` ID：`amd/DeepSeek-V4.1-Flash`、`amd/DeepSeek-V4-Flash` 推荐 DSH；`amd/MiMo-V2.6-Flash` 推荐 MiMo Code；`amd/GLM-5.3-Flash` 推荐 ZCode；`amd/Qwen3.8-27B` 默认使用官方 Qwen Code 0.27.3，Pi 保留为手动备选；`amd/MiniCPM-V-4.7-35B-A3B`、`amd/MiniCPM5-2B`、`amd/Gemma-4-31B-IT`、`amd/MiniCPM-V-4.7-1B` 推荐 Pi。均经 OFM 的 EAC Chat 转发，不与同名免费渠道合并。来源当前未声明这些路由的真实推理档位，外部 Harness 保留来源默认设置；DSH 来源菜单的 light、balanced、deep 控制输出预算。图片与上下文能力沿用来源实时声明，不根据模型名称补齐；Qwen Code 当前只接入文本输入。
 
 OFM 的 Kilo 目录对 `liquid/lfm-3-1.7b:free` 声明 `low`、`medium`、`high` 三档推理强度，默认 `high`，且不提供关闭思考。当前 OPL 适配使用的官方 Kilo ACP 自定义 provider 没有可写的 effort 配置项，因此不把来源档位伪装成 Kilo 选项；显式档位请求会在发送前拒绝，未指定档位时保留上游默认设置。
 
@@ -73,9 +75,9 @@ EAC 的 `opencode/nemotron-3.5-lightning-free`、`opencode/nemotron-3.5-super-vl
 
 `step-5-preview-free` 与 `muse-spark-1.2-contributor-free` 当前从 OPL 选择器隐藏；Jev 与 Content Safety 不作为编码组合提供。Muse Code 没有可用默认组合，不默认登记或提示安装，已有程序与显式配置保留。
 
-OPL Gateway 的 Gemini 4 Carbon 与 Gemini 4 Hydrogen 默认搭配官方 Antigravity CLI，通过 Gateway 原生 Gemini 接口使用该分组凭据，无需 Google 账号登录。新建和恢复均先固定模型及 CLI 实际广告的推理档位并回读（Gemini 4 Carbon 支持 `low`、`medium`、`high`，Gemini 4 Hydrogen 支持 `low`、`medium`、`high`、`xhigh`）；没有指定档位时明确使用 `high`。支持来源声明的图片输入，Windows 命令通过独占 profile 的官方 Hook 使用 Git Bash。只支持明确选择的完全权限，不支持 Auto Review。Token 账单取本轮 ACP 用量，上下文占用另取最后一次模型请求的估计，不混用累计用量。
+OPL Gateway 的四款 Gemini 默认搭配官方 Antigravity CLI，通过 Gateway 原生 Gemini 接口使用分组凭据，无需 Google 账号登录。新建和恢复会先核对 CLI 是否提供该模型和所选推理档位，再设置并回读。Carbon、Argon 和 3.8 Flash 支持 `low`、`medium`、`high`，Hydrogen 另支持 `xhigh`；未指定时使用 `high`。Antigravity 1.5.3 不提供 Carbon 和 Hydrogen，请使用提供相应模型的 CLI 版本或选择 OpenCode。支持来源声明的图片输入，Windows 命令通过独占 profile 的官方 Hook 使用 Git Bash。只支持明确选择的完全权限，不支持 Auto Review。Token 账单取本轮 ACP 用量，上下文占用另取最后一次模型请求的估计，不混用累计用量。
 
-OpenCode 保留为这两个模型的可选组合，已有会话及用户明确设置的默认组合保留绑定；Antigravity 失败不会自动转发到 OpenCode。Antigravity 当前只支持首条消息编辑重开，底层旧会话保留且不撤销文件；中途编辑可选 OpenCode。已退役的 Gemini 3.1 Pro、3.8 Flash 与 4 Argon 不再登记 OpenCode 默认路线，避免把旧组合继续显示为可用。自定义 Chat 地址不能推断原生 Gemini 地址，需使用 OPL 默认原生端点或保留 OpenCode 组合。
+四款 Gemini 均可在“添加执行组合”中另选 OpenCode。已有会话及用户明确设置的组合保留原有绑定和启用状态，Antigravity 请求失败时不会自动转交给 OpenCode。Antigravity 当前只支持首条消息编辑重开，底层旧会话保留且不撤销文件；中途编辑可选 OpenCode。Gemini 3.1 Pro 不提供新 OpenCode 组合。自定义 Chat 地址不能推断原生 Gemini 地址，需使用 OPL 默认原生端点或保留 OpenCode 组合。
 
 MiniMax M3.1 Flash 的三条车道分别保留原始 ID：`minimax-m3.1-flash-free` 使用 OpenCode 官方免费通道，Kilo 的 `minimax/minimax-m3.1-flash:free` 和 EAC 的 `minimaxai/minimax-m3.1-flash` 使用 OpenCode 经 OFM 转发。EAC 车道不使用 MiniMax Code 账号。StepCode 的 `stepfun-ai/step-5-preview` 使用独立 EAC 配置，不与 `stepfun/step-5-preview-free` 的 Kilo 车道合并。旧 Space Bunny 会话保留原模型身份，不自动替换历史路由。
 
@@ -85,7 +87,7 @@ Mistral Vibe 使用官方 3.0.4 ACP 发行包并保留随附文件，在“执�
 
 OpenCode 与 Kilo 的显式完全访问会话通过官方 `permission: "allow"` 配置执行工具，该配置只传给本次 CLI 进程；不会改写用户的配置文件。原生 DSH 组合同样支持显式完全访问，并使用官方持久化权限预设。受限权限与已有会话的权限不会因此升级。
 
-经 OFM 本地端点转发给 OpenCode/Kilo 的 Chat 流会合并先到的工具编号与后续函数分片，以兼容官方 CLI 的响应校验；不生成函数名、参数或完成标记。上游返回非 2xx 响应头时，转发器立即把受控的认证、模型、限流、超时或接口失败及 HTTP 状态回传给 DSH，关闭本轮自有连接与 CLI，不等待响应体结束或 CLI 重试。连接中断、流截断或工具分片冲突也结束本轮，但不冒充收到上游 HTTP 状态。原始响应体不写入诊断，晚到的 CLI 输出不能覆盖失败结果。若没有任何可识别的上游错误，OpenCode 在九十秒内没有正文、思考、工具或授权进展时由 OPL 结束本轮；收到首个有效进展后不再使用这个保护时限。兼容进程使用临时回环端口与独立密钥，随 CLI 关闭；直接连接 OpenCode 免费通道和 OPL Gemini 的请求不经过此处理。
+经 OFM 本地端点转发给 OpenCode/Kilo 的 Chat 流会合并先到的工具编号与后续函数分片，以兼容官方 CLI 的响应校验；不生成函数名、参数或完成标记。上游返回非 2xx 响应头时，转发器立即把受控的认证、模型、限流、超时或接口失败及 HTTP 状态回传给 DSH，关闭本轮自有连接与 CLI，不等待响应体结束或 CLI 重试。连接中断、流截断或工具分片冲突也结束本轮，但不冒充收到上游 HTTP 状态。原始响应体不写入诊断，晚到的 CLI 输出不能覆盖失败结果。没有明确上游错误时，等待遵循所选执行引擎；OPL 进展超时只有在设置中主动开启后才生效。兼容进程使用临时回环端口与独立密钥，随 CLI 关闭；直接连接 OpenCode 免费通道和 OPL Gemini 的请求不经过此处理。
 
 Kilo Beam 的工具后续请求要求 `reasoning_content` 字段，即使本次思考为空。该组合使用官方 `interleaved` 配置回传已保存的思考，不补写思考正文或改变推理档位。
 
@@ -116,11 +118,11 @@ Kimi 的消息编辑边界读取需要临时断开 ACP 并恢复同一原生会�
 
 Pi 在 Windows 通过官方 `--append-system-prompt` 明示真实 Git Bash 语法与路径形式；该说明进入官方 CLI 的系统请求，不切换 Shell、不转换模型命令，也不承诺模型不会写错命令。
 
-OpenCode 内置免费端点启用官方 `--print-logs`。Host 仅将当前在途会话的主推理 `AI_APICallError` 转换为固定失败提示；额度耗尽明确显示，不等待首次进展超时。标题任务、其他会话与普通日志不触发终止，原始诊断不回显。没有错误信号时仍保留无进展保护。
+OpenCode 内置免费端点启用官方 `--print-logs`。Host 仅将当前在途会话的主推理 `AI_APICallError` 转换为固定失败提示；额度耗尽明确显示，不等待首次进展超时。标题任务、其他会话与普通日志不触发终止，原始诊断不回显。没有错误信号时遵循所选执行引擎的等待策略；可选 OPL 进展超时默认关闭。
 
 手动停止外部任务保留 cancelled 状态，不把取消引发的连接关闭显示成上游错误。ZCode 的结构化原因链仅提取已知错误类别及 HTTP 状态，不回显响应体。会话输入栏显示本地排队状态；排队时请求尚未发往模型，不能计为模型无进展。Pool 使用 `--settings=路径` 固定单个参数，避免配置路径解析歧义。
 
-执行插件的 `executionLimits` 配置统一约束原生和外部请求：`firstProgressMs` 默认 90000，`idleProgressMs` 默认 90000，单位均为毫秒，设置页保存后对后续执行轮次生效，正在运行的轮次保留启动时快照。计时从实际执行开始，排队不计入；心跳和空更新不延长等待，重试不重置当前轮次预算。工具执行与公开人工等待暂停无进展计时。不设置单轮总时长上限；持续产生有效进展的任务不会因累计运行时间被终止，旧配置中的 `totalMs` 不再生效。无进展截止后停止本轮，不自动重发；未收到明确错误时只报告无进展，不推断上游原因。
+执行插件的 `executionLimits.enabled` 默认 `false`，设置页的“启用 OPL 进展超时”开关控制原生和外部请求的可选等待上限。关闭时不启动 OPL 进展计时器，已有秒数配置不会隐式开启；上游明确错误和用户取消仍立即处理。开启后，`firstProgressMs` 默认 90000，`idleProgressMs` 默认 90000，单位均为毫秒，设置页保存后对后续执行轮次生效，正在运行的轮次保留启动时快照。计时从实际执行开始，排队不计入；心跳和空更新不延长等待，重试不重置当前轮次预算。工具执行与公开人工等待暂停无进展计时。不设置单轮总时长上限；持续产生有效进展的任务不会因累计运行时间被终止，旧配置中的 `totalMs` 不再生效。无进展截止后停止本轮，不自动重发；未收到明确错误时只报告无进展，不推断上游原因。
 
 模型菜单仅在已确认的执行组合提供可选档位时显示推理设置。组合已停用、目录缺失或预检未完成时，不使用供应商通用档位代替 Harness 能力；旧会话保存的档位不在当前选项中时也不展示为生效值。
 
@@ -135,3 +137,5 @@ OpenCode 内置免费端点启用官方 `--print-logs`。Host 仅将当前在途
 模型选择的官方目录与执行组合目录并行读取；同一目录快照的重叠可用性检查合并为一次。检查完成或失败即释放共享结果，后续刷新仍读取当前状态，不增加目录有效期。CLI 推理能力仍以当前连接或实际预检为准。
 
 外部模型菜单区分官方模型选择保存的档位与 CLI 独立保存的档位。Codex、Claude 和 MiniMax 普通对话将当前官方请求的档位传入真实外部轮次；CLI 档位继续使用会话与组合的独立选择。能力预检等待或失败不清除 Host 已确认的 CLI 档位显示，发送前仍校验实际能力。
+
+OPL Gateway Gemini 支持 Argon、Carbon、Hydrogen 与 3.8 Flash，默认配官方 Antigravity，OpenCode 可手动选择为备用。切换 Harness 不会切换模型或渠道；上游返回错误时不自动改用备用组合。

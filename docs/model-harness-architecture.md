@@ -60,11 +60,11 @@ DeepSeek 4.1 Flash 的 DeepSeek 与 OpenAI 协议渠道默认推理档位为 `hi
 
 对话输入栏复用官方模型目录、模型选择投影、菜单组件与 Slot；OPL 的组合选择菜单显示“模型 · Harness”，来源仅作为展开菜单的分组标题。没有凭据的官方 DeepSeek 模型不作为可选项。DSH 原生组合调用官方 Session 的模型选择接口；外部 Harness 组合绑定到当前官方 Session，由 Host 在 `llm/stream` 阶段转发同一轮请求并把文本流回官方 Session。自动生成组合的权限只作为新委派任务的缺省值，切换模型保留当前会话选择的权限；显式只读组合通过官方只读预设同时设置 sandbox 与审批策略，不产生两者混用的 custom 状态，也不会静默扩大当前权限。原生会话列表不增加第二套 OPL 管理页面。普通原生子任务的目标入口是官方 Subagent/Team；OPL 委派工具负责跨 Harness 与显式交付验收所需的额外语义。
 
-自动组合只来自预先维护的“Harness + 官配模型”表，并在对应模型已经就绪后启用。DSH 的官配是 DeepSeek 自家模型；Codex、Claude、Grok Build、MiniMax、ZCode、Kimi、MiMo、Poolside、StepCode、Muse 只在厂商自家模型与对应 CLI 配对时自动生成。OpenCode、Kilo、Pi 等通用执行器没有自己的模型，官配列表为空，不会因为适配器支持某模型就生成内置组合；需要时可在“添加执行组合”中手动选择模型与执行器，跨厂商或通用执行器配对会标记为“自定义”。经 OFM 本地转发执行的手动外部组合还要求 OFM 本地转发已启用并运行。组合设置页会把“可启用但当前停用”的项目折叠；用户手动停用后，自动投影不会重新打开该组合。
+自动组合只来自预先维护的“Harness + 官配模型”表，并在对应模型已经就绪后启用。DSH 的官配是 DeepSeek 自家模型；Codex、Claude、Grok Build、MiniMax、ZCode、Kimi、MiMo、Poolside、StepCode、Muse、Qwen Code 只在厂商自家模型与对应 CLI 配对时自动生成。OpenCode、Kilo、Pi 等通用执行器没有自己的模型，官配列表为空，不会因为适配器支持某模型就生成内置组合；需要时可在“添加执行组合”中手动选择模型与执行器，跨厂商或通用执行器配对会标记为“自定义”。经 OFM 本地转发执行的手动外部组合还要求 OFM 本地转发已启用并运行。组合设置页会把“可启用但当前停用”的项目折叠；用户手动停用后，自动投影不会重新打开该组合。
 
 每个原生对话选中的组合 ID 保存在 OPL 自有的 `combination-selection.json`，用于重启后区分同一模型的多个自定义组合。它只关联官方会话 ID，不改变官方会话格式。模型选择以官方 live/cold 投影为准，冷会话通过公开 `session.projections` 读取，不借用新建会话激活历史；组合停用或模型被其他入口切换后，不再采用失配的关联。
 
-执行器使用官方 DSH、Grok Build、本机 Codex CLI 的 app-server，以及官方 Claude Agent SDK 驱动的本机 Claude Code。OPL 只做协议、权限、显示和协作映射，不实现 Agent 循环。Codex 与 Claude 的配置及会话保存在套件自有目录，不改日常 CLI 配置。OpenCode 也可承载 OPL Gateway Gemini 的两个固定组合：Gemini 4 Carbon 和 Gemini 4 Hydrogen；它们仍从 Gateway 读取凭据和 OpenAI Chat Completions 路由，OpenCode 只负责 Agent 循环与工具执行。OFM 的 `big-pickle` 与官方 OpenCode 免费车道同样由 OpenCode 执行；OpenCode 不广告推理档位，这些组合不显示推理强度。Kilo 频道的 `nvidia/nemotron-3-super-120b-a12b:free`、`recursive/flint-v1.0:free` 和 `liquid/lfm-3-1.7b:free` 由 Kilo 读取 OFM Chat 端点；`flint-40b-free` 由 OpenCode 读取 OFM Chat 端点。它们保留 OFM 作为模型来源。Antigravity 暂仅支持本机管理。
+执行器使用官方 DSH、Grok Build、本机 Codex CLI 的 app-server，以及官方 Claude Agent SDK 驱动的本机 Claude Code。OPL 只做协议、权限、显示和协作映射，不实现 Agent 循环。Codex 与 Claude 的配置及会话保存在套件自有目录，不改日常 CLI 配置。OpenCode 可承载 [OPL Gateway Gemini 组合](harness-adaptation.md)，凭据和 OpenAI Chat Completions 路由仍由 Gateway 管理。OFM 的 `big-pickle` 与官方 OpenCode 免费车道同样由 OpenCode 执行；OpenCode 不广告推理档位，这些组合不显示推理强度。Kilo 频道的 `nvidia/nemotron-3-super-120b-a12b:free`、`recursive/flint-v1.0:free` 和 `liquid/lfm-3-1.7b:free` 由 Kilo 读取 OFM Chat 端点；`flint-40b-free` 由 OpenCode 读取 OFM Chat 端点。它们保留 OFM 作为模型来源。Antigravity 暂仅支持本机管理。
 
 Claude Code 的官方 SDK 思考增量映射到对话中的思考流，正文增量仍独立显示；签名不显示，已完成的内容块不重复追加。只展示 SDK 实际发送的思考，渠道未发送时不补写。
 
@@ -73,6 +73,8 @@ Claude Code 的官方 SDK 思考增量映射到对话中的思考流，正文增
 各已接入 Harness 的协作工具可以先查询可用组合，再使用组合 ID 派发同项目子任务。Codex Skill 同样通过组合目录派发。各 Harness 保留自己的上下文，交接依靠明确的任务说明。
 
 官方具名 Subagent provider 适合简单的一次性委派，例如给 Codex provider 配置固定模型与权限，并通过专用工具调用。其结果不包含 OPL 连续会话、流式工具展示或交付验收合同。官方 preset/persona 可以承载固定角色说明；这不等于可以删除处理任意模型与 Harness 连续对话的组合目录。两类任务复用各自已有入口，不按“Bot”名称复制配置。
+
+Qwen Code 固定适配官方 `@qwen-code/qwen-code@0.27.3`，当前仅登记 OFM 主转发渠道的 `amd/Qwen3.8-27B`；保留原 Pi 配对供手动选择。连接读取 OFM 的实时目录、主渠道路由与公开转发端点；独立 Qwen 配置不写入密钥，启动及发送前核对官方回读的模型、接口和完全权限。Windows 使用实际探测通过的 Git Bash；此组合目前仅支持文本、模型默认推理和普通完全权限，不开放 Auto Review。token 按官方 live 请求事件累加并排除历史回放，上下文占用独立读取官方 `usage_update`，容量是来源配置或 Qwen 的配置值。Gemma 保留 Pi：当前反重力 1.5.3 的 ACP 模式未广告或接受自定义 Gemma，普通命令模式可调用不代表 ACP 组合可用。
 
 ## 迁移与验证
 

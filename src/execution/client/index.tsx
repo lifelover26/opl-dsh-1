@@ -7,6 +7,12 @@ import {
 import { MiniMaxAccountSection } from './MiniMaxAccountSection.tsx'
 import { QueueStatus } from './QueueStatus.tsx'
 import { installHarnessContextMeter } from './HarnessContextMeter.tsx'
+import {
+  PermissionMemoryPreference,
+  SUITE_FEATURE_NAMESPACE,
+  type PermissionMemorySettings,
+} from '../../shared/client/FeaturePreferences.tsx'
+import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { SETTINGS_ORDER } from '../../shared/client/settings-navigation.ts'
 import type { Context } from '@deepseek-ai/cordis'
 import { watchStopEditSession } from './stop-edit-session-watch.ts'
@@ -31,9 +37,14 @@ import {
   installMessageEditNavigation,
   messageEditDefinition,
 } from './message-edit-view.ts'
-import { allowProjectlessSessions, markProjectlessSession } from './fresh-session.ts'
+import {
+  allowProjectlessSessions,
+  isProjectlessSession,
+  markProjectlessSession,
+} from './fresh-session.ts'
 import {
   installProjectlessOfficialComposer,
+  installProjectlessWorkspaceChoice,
   PROJECTLESS_COMPOSER_NAMESPACE,
   projectlessComposerZh,
   projectlessComposerEn,
@@ -114,6 +125,21 @@ export function apply(ctx: Context, config: ClientConfig = {}): void {
       en: projectlessComposerEn,
     }),
   )
+  ctx.inject(['configForms'], (settings) => {
+    const permissionsForm = settings.configForms.get<PermissionMemorySettings>('opl-execution')
+    settings.slots.inject('settings.general.item', () =>
+      settings.slots.register(
+        {
+          name: 'settings.general.item',
+          id: 'opl-remember-permission-preset',
+          order: 36,
+          locale: SUITE_FEATURE_NAMESPACE,
+          inject: () => ({ form: permissionsForm }),
+        },
+        PermissionMemoryPreference,
+      ),
+    )
+  })
   const composerText = ctx.locale.bind(PROJECTLESS_COMPOSER_NAMESPACE)
   const call = remoteCall(ctx.remote.oplExecution)
   ctx.slots.inject('settings.models.footer', () =>
@@ -124,18 +150,30 @@ export function apply(ctx: Context, config: ClientConfig = {}): void {
   const workspace = ctx.uiWorkspace
   const sessions = ctx.sessions
   ctx.effect(() =>
-    allowProjectlessSessions(workspace, async () => {
-      // Reserve the projectless path in the OPL Host, then let the official
-      // Session Controller create/adopt the exact identity and publish it to
-      // the navigator before the Workspace service retains it.
-      const result = await call('projectless-session')
-      const sessionId = await sessions.create({
-        sessionId: result.sessionId as SessionId,
-        cwd: result.cwd,
-      })
-      markProjectlessSession(sessionId)
-      return sessionId
-    }),
+    allowProjectlessSessions(
+      workspace,
+      async () => {
+        // Reserve the projectless path in the OPL Host, then let the official
+        // Session Controller create/adopt the exact identity and publish it to
+        // the navigator before the Workspace service retains it.
+        const result = await call('projectless-session')
+        const sessionId = await sessions.create({
+          sessionId: result.sessionId as SessionId,
+          cwd: result.cwd,
+        })
+        markProjectlessSession(sessionId)
+        return sessionId
+      },
+      () => {
+        const current = Object.values(sessions.list.getSnapshot().byId).find(
+          ({ retainedBy }) =>
+            'mainView' in retainedBy &&
+            typeof retainedBy.mainView === 'number' &&
+            retainedBy.mainView > 0,
+        )
+        return current !== undefined && isProjectlessSession(current.id)
+      },
+    ),
   )
   ctx.effect(() => installMessageEditViews(ctx.uiConversation.views))
   ctx.effect(() => installMessageEditNavigation(ctx))
@@ -272,6 +310,14 @@ export function apply(ctx: Context, config: ClientConfig = {}): void {
     ),
   )
   const slots = ctx.slots
+  ctx.slots.inject('conversation.hero.workspace', () =>
+    installProjectlessWorkspaceChoice(
+      () => slots.entries('conversation.hero.workspace'),
+      (listener) => slots.subscribe('conversation.hero.workspace', listener),
+      () => workspace.startSession('' as Parameters<typeof workspace.startSession>[0]),
+      () => composerText('projectless'),
+    ),
+  )
   ctx.slots.inject('sidebar.workspaces', () =>
     installProjectlessUngroupedPlus(
       () => slots.entries('sidebar.workspaces'),

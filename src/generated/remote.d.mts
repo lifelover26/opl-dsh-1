@@ -5,7 +5,7 @@ import type {
   TypertRemoteInfo,
   TypertRemoteMethod,
 } from '@deepseek-ai/dsh-typert-protocol'
-import type { AutoReviewSaveRequest, AutoReviewSaveResult, AutoReviewStatus, CodexRuntimeRequest, CodexRuntimeResult, CooperationSettings, CoordinationStatus, DelegateRequest, DeliveryRecord, ExecutionCatalog, ExecutionLimits, GatewayAccountStatus, GatewayModelEdit, GatewayModelSettings, GatewayRememberedLogin, GatewaySignInResult, HarnessCatalog, HarnessContextReading, HarnessDetailPage, HarnessDetailRequest, HarnessInstallation, HarnessOrigin, HarnessPromptRequest, HarnessProxy, HarnessReasoningPreflight, HarnessSelection, HarnessSessionsPage, HarnessSessionsRequest, HarnessSnapshot, HarnessStartRequest, HarnessTaskSummary, LoginChoice, MessageEditSend, MessageEditState, MiniMaxAccountLoginRequest, MiniMaxAccountStatus, MiniMaxCandidateRequest, MiniMaxCandidateResult, ModelDraft, OplUpdatePolicy, OplUpdateStatus, ReportRequest, ReviewRequest, RoleExecutionCatalog, SessionRequest, SetupStatus, StopEditRequest, StopEditResult, StopEditState, StopEditStateRequest, TaskAckRequest, TaskAckValue, TaskConsumeRequest, TaskConsumeValue, TaskFlushValue, TaskLookupRequest, TaskReceipt, TaskReceiveRequest, TaskReceiveValue, TaskRecord, TaskRegistration, TaskRegistrationValue, TaskResumeRequest, TaskResumeValue, WakeSettings, WakeStatus } from '@one-person-lab/dsh-opl/types'
+import type { AutoReviewSaveRequest, AutoReviewSaveResult, AutoReviewStatus, CodexRuntimeRequest, CodexRuntimeResult, CooperationSettings, CoordinationStatus, CoordinatorHooksStatus, DelegateRequest, DeliveryRecord, ExecutionCatalog, ExecutionLimits, GatewayAccountStatus, GatewayModelEdit, GatewayModelSettings, GatewayRememberedLogin, GatewaySignInResult, HarnessCatalog, HarnessContextReading, HarnessDetailPage, HarnessDetailRequest, HarnessInstallation, HarnessOrigin, HarnessPromptRequest, HarnessProxy, HarnessReasoningPreflight, HarnessSelection, HarnessSessionsPage, HarnessSessionsRequest, HarnessSnapshot, HarnessStartRequest, HarnessTaskSummary, LoginChoice, MessageEditSend, MessageEditState, MiniMaxAccountLoginRequest, MiniMaxAccountStatus, MiniMaxCandidateRequest, MiniMaxCandidateResult, ModelDraft, NativeShellStatus, OplUpdatePolicy, OplUpdateStatus, ReportRequest, ReviewRequest, RoleExecutionCatalog, SessionRequest, SetupStatus, StopEditRequest, StopEditResult, StopEditState, StopEditStateRequest, TaskAckRequest, TaskAckValue, TaskConsumeRequest, TaskConsumeValue, TaskFlushValue, TaskLookupRequest, TaskReceipt, TaskReceiveRequest, TaskReceiveValue, TaskRecord, TaskRegistration, TaskRegistrationValue, TaskResumeRequest, TaskResumeValue, WakeSettings, WakeStatus } from '@one-person-lab/dsh-opl/types'
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
   interface TypertRemoteNamespace$6f706c4175746f526576696577 {
@@ -15,6 +15,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
   interface TypertRemoteNamespace$6f706c436f6f7264696e6174696f6e {
     'auto-start': (enabled: boolean) => Promise<RemoteResult<null>>
     'coordination-status': () => Promise<RemoteResult<CoordinationStatus>>
+    'coordinator-hooks': (action: string) => Promise<RemoteResult<CoordinatorHooksStatus>>
     'skill-install': () => Promise<RemoteResult<null>>
     'superagent-open': () => Promise<RemoteResult<{ state: string; }>>
     'wake-settings': (settings: WakeSettings) => Promise<RemoteResult<null>>
@@ -87,13 +88,16 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
   }
   interface TypertRemoteNamespace$6f706c5365747570 {
     finish: (choice: Exclude<LoginChoice, 'undecided'>) => Promise<RemoteResult<null>>
+    'native-shell': () => Promise<RemoteResult<NativeShellStatus>>
     'official-cancel': () => Promise<RemoteResult<null>>
     'official-key': (key: string) => Promise<RemoteResult<null>>
     'official-start': () => Promise<RemoteResult<null>>
+    'select-native-shell': (enabled: boolean) => Promise<RemoteResult<NativeShellStatus>>
     status: () => Promise<RemoteResult<SetupStatus>>
   }
   interface TypertRemoteNamespace$6f706c55706461746573 {
     activity: () => Promise<RemoteResult<void>>
+    applyNow: () => Promise<RemoteResult<OplUpdateStatus>>
     automatic: (enabled: boolean) => Promise<RemoteResult<OplUpdateStatus>>
     cancel: () => Promise<RemoteResult<OplUpdateStatus>>
     check: () => Promise<RemoteResult<OplUpdateStatus>>
@@ -121,6 +125,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'oplAutoReview/save': (request: AutoReviewSaveRequest) => Promise<RemoteResult<AutoReviewSaveResult>>
     'oplCoordination/auto-start': (enabled: boolean) => Promise<RemoteResult<null>>
     'oplCoordination/coordination-status': () => Promise<RemoteResult<CoordinationStatus>>
+    'oplCoordination/coordinator-hooks': (action: string) => Promise<RemoteResult<CoordinatorHooksStatus>>
     'oplCoordination/skill-install': () => Promise<RemoteResult<null>>
     'oplCoordination/superagent-open': () => Promise<RemoteResult<{ state: string; }>>
     'oplCoordination/wake-settings': (settings: WakeSettings) => Promise<RemoteResult<null>>
@@ -183,11 +188,14 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'oplRoleExecution/catalog': () => Promise<RemoteResult<RoleExecutionCatalog>>
     'oplRoleExecution/save': (request: { bindings: Record<string, string>; }) => Promise<RemoteResult<RoleExecutionCatalog>>
     'oplSetup/finish': (choice: Exclude<LoginChoice, 'undecided'>) => Promise<RemoteResult<null>>
+    'oplSetup/native-shell': () => Promise<RemoteResult<NativeShellStatus>>
     'oplSetup/official-cancel': () => Promise<RemoteResult<null>>
     'oplSetup/official-key': (key: string) => Promise<RemoteResult<null>>
     'oplSetup/official-start': () => Promise<RemoteResult<null>>
+    'oplSetup/select-native-shell': (enabled: boolean) => Promise<RemoteResult<NativeShellStatus>>
     'oplSetup/status': () => Promise<RemoteResult<SetupStatus>>
     'oplUpdates/activity': () => Promise<RemoteResult<void>>
+    'oplUpdates/applyNow': () => Promise<RemoteResult<OplUpdateStatus>>
     'oplUpdates/automatic': (enabled: boolean) => Promise<RemoteResult<OplUpdateStatus>>
     'oplUpdates/cancel': () => Promise<RemoteResult<OplUpdateStatus>>
     'oplUpdates/check': () => Promise<RemoteResult<OplUpdateStatus>>
@@ -226,6 +234,7 @@ export declare const TYPERT_REMOTE: TypertRemoteInfo<{
   readonly 'oplAutoReview/save': TypertRemoteMethod<{ readonly 'request': AutoReviewSaveRequest }, AutoReviewSaveResult>
   readonly 'oplCoordination/auto-start': TypertRemoteMethod<{ readonly 'enabled': boolean }, null>
   readonly 'oplCoordination/coordination-status': TypertRemoteMethod<{  }, CoordinationStatus>
+  readonly 'oplCoordination/coordinator-hooks': TypertRemoteMethod<{ readonly 'action': string }, CoordinatorHooksStatus>
   readonly 'oplCoordination/skill-install': TypertRemoteMethod<{  }, null>
   readonly 'oplCoordination/superagent-open': TypertRemoteMethod<{  }, { state: string; }>
   readonly 'oplCoordination/wake-settings': TypertRemoteMethod<{ readonly 'settings': WakeSettings }, null>
@@ -288,11 +297,14 @@ export declare const TYPERT_REMOTE: TypertRemoteInfo<{
   readonly 'oplRoleExecution/catalog': TypertRemoteMethod<{  }, RoleExecutionCatalog>
   readonly 'oplRoleExecution/save': TypertRemoteMethod<{ readonly 'request': { bindings: Record<string, string>; } }, RoleExecutionCatalog>
   readonly 'oplSetup/finish': TypertRemoteMethod<{ readonly 'choice': Exclude<LoginChoice, 'undecided'> }, null>
+  readonly 'oplSetup/native-shell': TypertRemoteMethod<{  }, NativeShellStatus>
   readonly 'oplSetup/official-cancel': TypertRemoteMethod<{  }, null>
   readonly 'oplSetup/official-key': TypertRemoteMethod<{ readonly 'key': string }, null>
   readonly 'oplSetup/official-start': TypertRemoteMethod<{  }, null>
+  readonly 'oplSetup/select-native-shell': TypertRemoteMethod<{ readonly 'enabled': boolean }, NativeShellStatus>
   readonly 'oplSetup/status': TypertRemoteMethod<{  }, SetupStatus>
   readonly 'oplUpdates/activity': TypertRemoteMethod<{  }, void>
+  readonly 'oplUpdates/applyNow': TypertRemoteMethod<{  }, OplUpdateStatus>
   readonly 'oplUpdates/automatic': TypertRemoteMethod<{ readonly 'enabled': boolean }, OplUpdateStatus>
   readonly 'oplUpdates/cancel': TypertRemoteMethod<{  }, OplUpdateStatus>
   readonly 'oplUpdates/check': TypertRemoteMethod<{  }, OplUpdateStatus>
